@@ -1,16 +1,31 @@
+import merge from "lodash/merge";
 import * as url from "node:url";
 import uws, { AppOptions } from "uWebSockets.js";
+import { bootstrapRequestAndResponse } from "./http/bootstrap";
+import { body, getUploadedFile, headers, params, query } from "./http/req";
 import {
   ErrorHandler,
+  HttpContentType,
   HttpMethod,
   ICustomRequest,
   ICustomResponse,
+  IServerBootstrapOptions,
   RequestHandler,
   Route,
 } from "./types";
 
 class Yume {
   private serverOptions: AppOptions = {};
+  private methodConfig: IServerBootstrapOptions = {
+    requestOptions: {
+      body: false,
+      getUploadedFile: false,
+      headers: false,
+      params: false,
+      query: false,
+    },
+    responseOptions: {},
+  };
 
   private routes: Array<Route> = [];
   private middleware: RequestHandler[] = [];
@@ -149,6 +164,8 @@ class Yume {
     const parsedUrl = url.parse(reqUrl || "", true);
     const { pathname } = parsedUrl;
 
+    bootstrapRequestAndResponse(req, res, this.methodConfig);
+
     this.applyMiddleware(req, res, () => {
       const matchedResponse = this.matchRoute(method, pathname || "");
 
@@ -219,6 +236,10 @@ class Yume {
     this.serverOptions = options;
   }
 
+  public configServer(options: IServerBootstrapOptions) {
+    this.methodConfig = merge(this.methodConfig, options);
+  }
+
   public listen(port: number, cb: VoidFunction) {
     const app = uws.App(this.serverOptions);
 
@@ -228,4 +249,19 @@ class Yume {
   }
 }
 
-export { Yume };
+export {
+  ErrorHandler,
+  HttpContentType,
+  HttpMethod,
+  ICustomRequest,
+  ICustomResponse,
+  IServerBootstrapOptions,
+  RequestHandler,
+  Route,
+  Yume,
+  body,
+  getUploadedFile,
+  headers,
+  params,
+  query,
+};

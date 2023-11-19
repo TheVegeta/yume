@@ -1,4 +1,5 @@
 import url from "node:url";
+import { MultipartField, getParts } from "uWebSockets.js";
 import { HttpContentType, ICustomRequest, ICustomResponse } from "../types";
 import { handleArrayBuffer, voidFunction } from "../utils";
 
@@ -58,5 +59,29 @@ export const body = async <T>(
     } catch (err) {
       resolve(null);
     }
+  });
+};
+
+export const getUploadedFile = async (
+  req: ICustomRequest,
+  res: ICustomResponse
+): Promise<MultipartField[] | undefined> => {
+  const header = req.getHeader("content-type");
+
+  return await new Promise((resolve) => {
+    let buffer = Buffer.from("");
+
+    res
+      .onData((ab, isLast) => {
+        const chunk = Buffer.from(ab);
+        buffer = Buffer.concat([buffer, chunk]);
+
+        if (isLast) {
+          const data = getParts(buffer, header);
+
+          resolve(data);
+        }
+      })
+      .onAborted(voidFunction);
   });
 };

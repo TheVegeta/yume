@@ -1,10 +1,31 @@
-import { HttpRequest, HttpResponse } from "uWebSockets.js";
+import { HttpRequest, HttpResponse, MultipartField } from "uWebSockets.js";
 
 export interface ICustomRequest extends HttpRequest {
   _internalReqParams?: string;
+  headers?: <T>(req: ICustomRequest) => T | null;
+  params?: <T>(req: ICustomRequest) => T | null;
+  query?: <T>(req: ICustomRequest) => T | null;
+  body?: <T>(req: ICustomRequest, res: ICustomResponse) => Promise<T | null>;
+  getUploadedFile?: (
+    req: ICustomRequest,
+    res: ICustomResponse
+  ) => Promise<MultipartField[] | undefined>;
 }
 
 export interface ICustomResponse extends HttpResponse {}
+
+export interface IServerBootstrapOptions {
+  requestOptions:
+    | boolean
+    | {
+        headers: boolean;
+        params: boolean;
+        query: boolean;
+        body: boolean;
+        getUploadedFile: boolean;
+      };
+  responseOptions: boolean | {};
+}
 
 export type RequestHandler = (
   req: ICustomRequest,
