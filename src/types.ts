@@ -1,10 +1,9 @@
-import { ParsedUrlQuery } from "querystring";
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
 
-export interface ICustomRequest<Params = undefined | ParsedUrlQuery>
-  extends HttpRequest {
-  params?: Params;
+export interface ICustomRequest extends HttpRequest {
+  _internalReqParams?: string;
 }
+
 export interface ICustomResponse extends HttpResponse {}
 
 export type RequestHandler = (
@@ -35,3 +34,7 @@ export type HttpMethod =
   | "HEAD"
   | "CONNECT"
   | "TRACE";
+
+export type HttpContentType =
+  | "application/x-www-form-urlencoded"
+  | "application/json";

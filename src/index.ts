@@ -85,13 +85,18 @@ class Yume {
   private processRequest(
     req: ICustomRequest,
     res: ICustomResponse,
-    route: Route
+    route: {
+      route: Route;
+      params: {
+        [key: string]: string;
+      };
+    }
   ) {
     let index = 0;
 
     const runNextHandler = () => {
-      if (index < route.handlers.length) {
-        const currentHandler = route.handlers[index];
+      if (index < route.route.handlers.length) {
+        const currentHandler = route.route.handlers[index];
         index++;
         currentHandler(req, res, runNextHandler);
       }
@@ -148,8 +153,8 @@ class Yume {
       const matchedResponse = this.matchRoute(method, pathname || "");
 
       if (matchedResponse) {
-        req.params = matchedResponse.params;
-        this.processRequest(req, res, matchedResponse.route);
+        req._internalReqParams = JSON.stringify(matchedResponse.params);
+        this.processRequest(req, res, matchedResponse);
       } else {
         this.runnotFoundFn(req, res);
       }

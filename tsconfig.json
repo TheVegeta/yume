@@ -1,11 +1,19 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "commonjs",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "target": "es5",
+    "module": "umd",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "dist"
-  }
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "lib": ["es5", "es6", "es2015", "es2017", "dom"],
+    "downlevelIteration": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }
