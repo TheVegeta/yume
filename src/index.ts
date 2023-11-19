@@ -156,6 +156,10 @@ class Yume {
     });
   }
 
+  public useRouterAdapter(routerAdapter: (adapter: Yume) => void) {
+    routerAdapter(this);
+  }
+
   public use(...handlers: RequestHandler[]) {
     for (const handler of handlers) {
       this.middleware.push(handler);
