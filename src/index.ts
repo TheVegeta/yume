@@ -1,5 +1,5 @@
 import merge from "lodash/merge";
-import * as url from "node:url";
+import { parse } from "regexparam";
 import uws, { AppOptions } from "uWebSockets.js";
 import { bootstrapRequestAndResponse } from "./http/bootstrap";
 import { body, getUploadedFile, headers, params, query } from "./http/req";
@@ -27,7 +27,7 @@ class Yume {
     responseOptions: {},
   };
 
-  private routes: Array<Route> = [];
+  private routes: Route[] = [];
   private middleware: RequestHandler[] = [];
 
   private notFoundFn: RequestHandler | undefined;
@@ -41,6 +41,22 @@ class Yume {
     this.processRequest = this.processRequest.bind(this);
     this.matchRoute = this.matchRoute.bind(this);
     this.requestHandler = this.requestHandler.bind(this);
+    this.useRouterAdapter = this.useRouterAdapter.bind(this);
+    this.use = this.use.bind(this);
+    this.get = this.get.bind(this);
+    this.head = this.head.bind(this);
+    this.post = this.post.bind(this);
+    this.put = this.put.bind(this);
+    this.delete = this.delete.bind(this);
+    this.connect = this.connect.bind(this);
+    this.options = this.options.bind(this);
+    this.trace = this.trace.bind(this);
+    this.patch = this.patch.bind(this);
+    this.notFound = this.notFound.bind(this);
+    this.errHandler = this.errHandler.bind(this);
+    this.setServerOptions = this.setServerOptions.bind(this);
+    this.configServer = this.configServer.bind(this);
+    this.listen = this.listen.bind(this);
   }
 
   private setRoute(
@@ -48,7 +64,11 @@ class Yume {
     path: string,
     ...handlers: RequestHandler[]
   ) {
-    this.routes.push({ handlers, method: method.toLowerCase(), path });
+    this.routes.push({
+      pattern: parse(path).pattern,
+      method: method.toLowerCase(),
+      handlers,
+    });
   }
 
   private applyMiddleware(
@@ -61,7 +81,6 @@ class Yume {
     const next = () => {
       if (index < this.middleware.length) {
         const currentMiddleware = this.middleware[index++];
-        index++;
         currentMiddleware(req, res, next);
       } else {
         done();
@@ -100,19 +119,13 @@ class Yume {
   private processRequest(
     req: ICustomRequest,
     res: ICustomResponse,
-    route: {
-      route: Route;
-      params: {
-        [key: string]: string;
-      };
-    }
+    handlers: RequestHandler[]
   ) {
     let index = 0;
 
     const runNextHandler = () => {
-      if (index < route.route.handlers.length) {
-        const currentHandler = route.route.handlers[index];
-        index++;
+      if (index < handlers.length) {
+        const currentHandler = handlers[index++];
         currentHandler(req, res, runNextHandler);
       }
     };
@@ -123,55 +136,25 @@ class Yume {
   private matchRoute(
     method: HttpMethod,
     pathname: string
-  ):
-    | {
-        route: Route;
-        params: {
-          [key: string]: string;
-        };
-      }
-    | undefined {
+  ): RequestHandler[] | undefined {
     for (const route of this.routes) {
-      const routePathSegments = route.path.split("/");
-      const requestPathSegments = (pathname || "").split("/");
-
-      if (
-        route.method === method &&
-        routePathSegments.length === requestPathSegments.length
-      ) {
-        const params: { [key: string]: string } = {};
-
-        const isMatch = routePathSegments.every((segment, index) => {
-          if (segment.startsWith(":")) {
-            const paramName = segment.slice(1);
-            params[paramName] = requestPathSegments[index];
-            return true;
-          } else {
-            return segment === requestPathSegments[index];
-          }
-        });
-
-        if (isMatch) {
-          return { route, params };
-        }
+      if (route.method === method && route.pattern.test(pathname)) {
+        return route.handlers;
       }
     }
   }
 
   private requestHandler(res: ICustomResponse, req: ICustomRequest) {
-    const reqUrl = req.getUrl();
+    const url = req.getUrl();
     const method = req.getMethod() as HttpMethod;
-    const parsedUrl = url.parse(reqUrl || "", true);
-    const { pathname } = parsedUrl;
 
     bootstrapRequestAndResponse(req, res, this.methodConfig);
 
     this.applyMiddleware(req, res, () => {
-      const matchedResponse = this.matchRoute(method, pathname || "");
+      const handler = this.matchRoute(method, url);
 
-      if (matchedResponse) {
-        req._internalReqParams = JSON.stringify(matchedResponse.params);
-        this.processRequest(req, res, matchedResponse);
+      if (handler) {
+        this.processRequest(req, res, handler);
       } else {
         this.runnotFoundFn(req, res);
       }
@@ -242,9 +225,7 @@ class Yume {
 
   public listen(port: number, cb: VoidFunction) {
     const app = uws.App(this.serverOptions);
-
     app.any("/*", this.requestHandler);
-
     app.listen(port, cb);
   }
 }

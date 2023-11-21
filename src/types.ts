@@ -14,6 +14,12 @@ export interface ICustomRequest extends HttpRequest {
 
 export interface ICustomResponse extends HttpResponse {}
 
+export type Route = {
+  pattern: RegExp;
+  method: string;
+  handlers: RequestHandler[];
+};
+
 export interface IServerBootstrapOptions {
   requestOptions:
     | boolean
@@ -38,12 +44,6 @@ export type ErrorHandler = (
   req: ICustomRequest,
   res: ICustomResponse
 ) => void;
-
-export interface Route {
-  method: string;
-  path: string;
-  handlers: RequestHandler[];
-}
 
 export type HttpMethod =
   | "GET"
