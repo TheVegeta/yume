@@ -1,4 +1,5 @@
 import merge from "lodash/merge";
+import toLower from "lodash/toLower";
 import { parse } from "regexparam";
 import uws, { AppOptions } from "uWebSockets.js";
 import { bootstrapRequestAndResponse } from "./http/bootstrap";
@@ -66,7 +67,7 @@ class Yume {
   ) {
     this.routes.push({
       pattern: parse(path).pattern,
-      method: method.toLowerCase(),
+      method: toLower(method),
       handlers,
     });
   }
