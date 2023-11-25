@@ -1,6 +1,13 @@
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
 
-export interface ICustomRequest extends HttpRequest {}
+export interface ICustomRequest extends HttpRequest {
+  // headers: <T>() => T | null;
+  // params: <T>() => T | null;
+  // query: <T>() => T | null;
+  // body: <T>() => Promise<T | null>;
+  // getUploadedFile: Promise<() => Promise<MultipartField[] | undefined>>;
+}
+
 export interface ICustomResponse extends HttpResponse {}
 
 export type RequestHandler = (
@@ -26,3 +33,7 @@ export type HttpMethod =
   | "connect"
   | "trace"
   | "all";
+
+export type HttpContentType =
+  | "application/x-www-form-urlencoded"
+  | "application/json";

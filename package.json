@@ -14,12 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "lodash": "^4.17.21",
     "regexparam": "^2.0.1",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.34.0"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.201",
     "@types/node": "^20.9.1"
   }
 }

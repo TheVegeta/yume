@@ -1,7 +1,13 @@
-import _ from "lodash";
 import { parse } from "regexparam";
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
-import { HttpMethod, RequestHandler, Routes } from "../types";
+import {
+  HttpMethod,
+  ICustomRequest,
+  ICustomResponse,
+  RequestHandler,
+  Routes,
+} from "../types";
+import { bootstrapReqRes } from "../utils";
 
 export class RouteHandler {
   private routes: Routes[] = [];
@@ -19,8 +25,8 @@ export class RouteHandler {
   }
 
   private applyMiddleware(
-    req: HttpRequest,
-    res: HttpResponse,
+    req: ICustomRequest,
+    res: ICustomResponse,
     done: VoidFunction
   ) {
     if (this.middleware.length === 0) {
@@ -39,8 +45,8 @@ export class RouteHandler {
   }
 
   private applyHandler(
-    req: HttpRequest,
-    res: HttpResponse,
+    req: ICustomRequest,
+    res: ICustomResponse,
     handler: RequestHandler[]
   ) {
     for (let i = 0; i < handler.length; i++) {
@@ -66,11 +72,13 @@ export class RouteHandler {
     const url = req.getUrl();
     const method = req.getMethod() as HttpMethod;
 
-    this.applyMiddleware(req, res, () => {
+    const { upReq, upRes } = bootstrapReqRes(req, res);
+
+    this.applyMiddleware(upReq, upRes, () => {
       const handler = this.matchRoute(url, method);
 
       if (handler) {
-        this.applyHandler(req, res, handler);
+        this.applyHandler(upReq, upRes, handler);
       } else {
         res.end("Not Found");
       }
@@ -78,7 +86,7 @@ export class RouteHandler {
   }
 
   private sortRoute() {
-    this.routes = _.sortBy(this.routes, (_) => (_.method === "all" ? 1 : 0));
+    this.routes = this.routes.sort((_) => (_.method === "all" ? 1 : 0));
   }
 
   public bootstrap() {
