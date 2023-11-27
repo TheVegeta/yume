@@ -1,18 +1,9 @@
-import { HttpRequest, HttpResponse } from "uWebSockets.js";
-
-export interface ICustomRequest extends HttpRequest {
-  // headers: <T>() => T | null;
-  // params: <T>() => T | null;
-  // query: <T>() => T | null;
-  // body: <T>() => Promise<T | null>;
-  // getUploadedFile: Promise<() => Promise<MultipartField[] | undefined>>;
-}
-
-export interface ICustomResponse extends HttpResponse {}
+import { Request } from "../handler/Request";
+import { Response } from "../handler/Response";
 
 export type RequestHandler = (
-  req: ICustomRequest,
-  res: ICustomResponse,
+  req: Request,
+  res: Response,
   next?: VoidFunction
 ) => void;
 

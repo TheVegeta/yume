@@ -1,15 +1,48 @@
 import url from "node:url";
-import { HttpRequest, MultipartField, getParts } from "uWebSockets.js";
-import { HttpContentType, ICustomResponse } from "../types";
+import {
+  HttpRequest,
+  HttpResponse,
+  MultipartField,
+  getParts,
+} from "uWebSockets.js";
+import { HttpContentType } from "../types";
 import { handleArrayBuffer, voidFunction } from "../utils";
 
-export const headers =
-  <T>(req: HttpRequest): (() => T | null) =>
-  () => {
+export class Request {
+  constructor(private req: HttpRequest, private res: HttpResponse) {}
+
+  public getHeader(lowerCaseKey: string) {
+    return this.req.getHeader(lowerCaseKey);
+  }
+
+  public getParameter(index: number) {
+    return this.req.getParameter(index);
+  }
+
+  public getUrl() {
+    return this.req.getUrl();
+  }
+
+  public getMethod() {
+    return this.req.getMethod();
+  }
+
+  public getCaseSensitiveMethod() {
+    return this.req.getCaseSensitiveMethod();
+  }
+
+  public getQuery() {
+    return this.req.getQuery();
+  }
+
+  public setYield(_yield: boolean) {
+    return this.req.setYield(_yield);
+  }
+
+  public headers<T>(): T | null {
     try {
       const obj: any = {};
-
-      req.forEach((k, v) => {
+      this.req.forEach((k, v) => {
         obj[k] = v;
       });
 
@@ -17,37 +50,27 @@ export const headers =
     } catch (err) {
       return null;
     }
-  };
+  }
 
-export const params =
-  <T>(req: HttpRequest): (() => T | null) =>
-  () => {
-    //TODO: need to implement this
+  public params<T>(): T | null {
     return null;
-  };
+  }
 
-export const query =
-  <T>(req: HttpRequest): (() => T | null) =>
-  () => {
+  public query<T>(): T | null {
     try {
-      const { query } = url.parse(`?${req.getQuery()}`, true);
+      const { query } = url.parse(`?${this.req.getQuery()}`, true);
       return (query as T) || null;
     } catch (err) {
       return null;
     }
-  };
+  }
 
-export const body =
-  async <T>(
-    req: HttpRequest,
-    res: ICustomResponse
-  ): Promise<() => Promise<T | null>> =>
-  async () => {
+  public async body<T>(): Promise<T | null> {
     return await new Promise<T | null>(async (resolve) => {
       try {
-        const reqType = req.getHeader("content-type") as HttpContentType;
+        const reqType = this.req.getHeader("content-type") as HttpContentType;
 
-        res
+        this.res
           .onData((data) => {
             const response = handleArrayBuffer(data);
 
@@ -65,20 +88,15 @@ export const body =
         resolve(null);
       }
     });
-  };
+  }
 
-export const getUploadedFile =
-  async (
-    req: HttpRequest,
-    res: ICustomResponse
-  ): Promise<() => Promise<MultipartField[] | undefined>> =>
-  async () => {
-    const header = req.getHeader("content-type");
+  public async file(): Promise<MultipartField[] | undefined> {
+    const header = this.req.getHeader("content-type");
 
     return await new Promise<MultipartField[] | undefined>((resolve) => {
       let buffer = Buffer.from("");
 
-      res
+      this.res
         .onData((ab, isLast) => {
           const chunk = Buffer.from(ab);
           buffer = Buffer.concat([buffer, chunk]);
@@ -91,4 +109,5 @@ export const getUploadedFile =
         })
         .onAborted(voidFunction);
     });
-  };
+  }
+}

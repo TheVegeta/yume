@@ -1,13 +1,8 @@
 import { parse } from "regexparam";
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
-import {
-  HttpMethod,
-  ICustomRequest,
-  ICustomResponse,
-  RequestHandler,
-  Routes,
-} from "../types";
-import { bootstrapReqRes } from "../utils";
+import { HttpMethod, RequestHandler, Routes } from "../types";
+import { Request } from "./Request";
+import { Response } from "./Response";
 
 export class RouteHandler {
   private routes: Routes[] = [];
@@ -24,11 +19,7 @@ export class RouteHandler {
     this.routes.push({ handler, method, pattern: parse(path).pattern });
   }
 
-  private applyMiddleware(
-    req: ICustomRequest,
-    res: ICustomResponse,
-    done: VoidFunction
-  ) {
+  private applyMiddleware(req: Request, res: Response, done: VoidFunction) {
     if (this.middleware.length === 0) {
       done();
     } else {
@@ -44,11 +35,7 @@ export class RouteHandler {
     }
   }
 
-  private applyHandler(
-    req: ICustomRequest,
-    res: ICustomResponse,
-    handler: RequestHandler[]
-  ) {
+  private applyHandler(req: Request, res: Response, handler: RequestHandler[]) {
     for (let i = 0; i < handler.length; i++) {
       const currentHandler = handler[i];
       currentHandler(req, res);
@@ -72,13 +59,14 @@ export class RouteHandler {
     const url = req.getUrl();
     const method = req.getMethod() as HttpMethod;
 
-    const { upReq, upRes } = bootstrapReqRes(req, res);
+    const upRequest = new Request(req, res);
+    const upResponse = new Response(req, res);
 
-    this.applyMiddleware(upReq, upRes, () => {
+    this.applyMiddleware(upRequest, upResponse, () => {
       const handler = this.matchRoute(url, method);
 
       if (handler) {
-        this.applyHandler(upReq, upRes, handler);
+        this.applyHandler(upRequest, upResponse, handler);
       } else {
         res.end("Not Found");
       }

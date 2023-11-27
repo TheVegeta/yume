@@ -1,10 +1,13 @@
-import { App } from "uWebSockets.js";
+import { App, RecognizedString, WebSocketBehavior } from "uWebSockets.js";
 import { RouteHandler } from "./handler/RouteHandler";
 import { RequestHandler } from "./types";
 
 class Yume extends RouteHandler {
+  private app;
+
   constructor() {
     super();
+    this.app = App();
   }
 
   public get(path: string, ...handler: RequestHandler[]) {
@@ -47,15 +50,17 @@ class Yume extends RouteHandler {
     super.set("all", path, ...handler);
   }
 
+  public ws<T>(pattern: RecognizedString, behavior: WebSocketBehavior<T>) {
+    this.app.ws(pattern, behavior);
+  }
+
   public listen(port: number, cb: VoidFunction) {
     super.bootstrap();
 
-    const app = App();
-
-    app.any("/*", (req, res) => {
+    this.app.any("/*", (req, res) => {
       super.processRequest(res, req);
     });
 
-    app.listen(port, cb);
+    this.app.listen(port, cb);
   }
 }
