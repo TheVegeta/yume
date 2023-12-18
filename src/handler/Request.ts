@@ -11,32 +11,32 @@ import { handleArrayBuffer, voidFunction } from "../utils";
 export class Request {
   constructor(private req: HttpRequest, private res: HttpResponse) {}
 
-  public getHeader(lowerCaseKey: string) {
-    return this.req.getHeader(lowerCaseKey);
+  public getHeader() {
+    return this.req.getHeader;
   }
 
-  public getParameter(index: number) {
-    return this.req.getParameter(index);
+  public getParameter() {
+    return this.req.getParameter;
   }
 
   public getUrl() {
-    return this.req.getUrl();
+    return this.req.getUrl;
   }
 
   public getMethod() {
-    return this.req.getMethod();
+    return this.req.getMethod;
   }
 
   public getCaseSensitiveMethod() {
-    return this.req.getCaseSensitiveMethod();
+    return this.req.getCaseSensitiveMethod;
   }
 
   public getQuery() {
-    return this.req.getQuery();
+    return this.req.getQuery;
   }
 
-  public setYield(_yield: boolean) {
-    return this.req.setYield(_yield);
+  public setYield() {
+    return this.req.setYield;
   }
 
   public headers<T>(): T | null {

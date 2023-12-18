@@ -64,3 +64,5 @@ class Yume extends RouteHandler {
     this.app.listen(port, cb);
   }
 }
+
+export { Yume };
