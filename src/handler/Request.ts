@@ -7,9 +7,14 @@ import {
 } from "uWebSockets.js";
 import { HttpContentType } from "../types";
 import { handleArrayBuffer, voidFunction } from "../utils";
+import { RouteHandler } from "./RouteHandler";
 
 export class Request {
-  constructor(private req: HttpRequest, private res: HttpResponse) {}
+  constructor(
+    private req: HttpRequest,
+    private res: HttpResponse,
+    private matchPath: RouteHandler["matchPath"]
+  ) {}
 
   public getHeader() {
     return this.req.getHeader;

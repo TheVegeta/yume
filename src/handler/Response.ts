@@ -80,6 +80,8 @@ export class Response {
   }
 
   json<T>(data: T) {
-    return this.res.end(JSON.stringify(data));
+    return this.res
+      .writeHeader("content-type", "application/json")
+      .end(JSON.stringify(data));
   }
 }

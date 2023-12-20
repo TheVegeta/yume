@@ -11,6 +11,7 @@ export interface Routes {
   pattern: RegExp;
   method: HttpMethod;
   handler: RequestHandler[];
+  path: string;
 }
 
 export type HttpMethod =

@@ -16,7 +16,7 @@ export class RouteHandler {
   }
 
   public set(method: HttpMethod, path: string, ...handler: RequestHandler[]) {
-    this.routes.push({ handler, method, pattern: parse(path).pattern });
+    this.routes.push({ handler, method, pattern: parse(path).pattern, path });
   }
 
   private applyMiddleware(req: Request, res: Response, done: VoidFunction) {
@@ -42,6 +42,16 @@ export class RouteHandler {
     }
   }
 
+  private matchPath(path: string, method: HttpMethod): string | undefined {
+    for (let i = 0; i < this.routes.length; i++) {
+      if (this.routes[i].method === method || this.routes[i].method === "all") {
+        if (this.routes[i].pattern.test(path)) {
+          return this.routes[i].path;
+        }
+      }
+    }
+  }
+
   private matchRoute(
     path: string,
     method: HttpMethod
@@ -59,7 +69,7 @@ export class RouteHandler {
     const url = req.getUrl();
     const method = req.getMethod() as HttpMethod;
 
-    const upRequest = new Request(req, res);
+    const upRequest = new Request(req, res, this.matchPath);
     const upResponse = new Response(req, res);
 
     this.applyMiddleware(upRequest, upResponse, () => {

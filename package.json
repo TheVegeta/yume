@@ -4,7 +4,7 @@
   "description": "Yume (夢)",
   "main": "index.js",
   "scripts": {
-    "test": "npx ts-node src/yume.ts"
+    "dev": "npx ts-node-dev src/yume.ts"
   },
   "repository": {
     "type": "git",
