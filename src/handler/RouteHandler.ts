@@ -42,24 +42,14 @@ export class RouteHandler {
     }
   }
 
-  private matchPath(path: string, method: HttpMethod): string | undefined {
-    for (let i = 0; i < this.routes.length; i++) {
-      if (this.routes[i].method === method || this.routes[i].method === "all") {
-        if (this.routes[i].pattern.test(path)) {
-          return this.routes[i].path;
-        }
-      }
-    }
-  }
-
   private matchRoute(
     path: string,
     method: HttpMethod
-  ): RequestHandler[] | undefined {
+  ): { handler: RequestHandler[]; path: string } | undefined {
     for (let i = 0; i < this.routes.length; i++) {
       if (this.routes[i].method === method || this.routes[i].method === "all") {
         if (this.routes[i].pattern.test(path)) {
-          return this.routes[i].handler;
+          return { handler: this.routes[i].handler, path: this.routes[i].path };
         }
       }
     }
@@ -69,14 +59,14 @@ export class RouteHandler {
     const url = req.getUrl();
     const method = req.getMethod() as HttpMethod;
 
-    const upRequest = new Request(req, res, this.matchPath);
+    const handler = this.matchRoute(url, method);
+
+    const upRequest = new Request(req, res, handler?.path || "");
     const upResponse = new Response(req, res);
 
     this.applyMiddleware(upRequest, upResponse, () => {
-      const handler = this.matchRoute(url, method);
-
       if (handler) {
-        this.applyHandler(upRequest, upResponse, handler);
+        this.applyHandler(upRequest, upResponse, handler.handler);
       } else {
         res.end("Not Found");
       }

@@ -7,13 +7,12 @@ import {
 } from "uWebSockets.js";
 import { HttpContentType } from "../types";
 import { handleArrayBuffer, voidFunction } from "../utils";
-import { RouteHandler } from "./RouteHandler";
 
 export class Request {
   constructor(
     private req: HttpRequest,
     private res: HttpResponse,
-    private matchPath: RouteHandler["matchPath"]
+    private path: string
   ) {}
 
   public getHeader() {
@@ -57,8 +56,22 @@ export class Request {
     }
   }
 
-  public params<T>(): T | null {
-    return null;
+  public getParams<T>(): T | null {
+    const url = this.req.getUrl();
+    const path = this.path;
+
+    const pathArr = path.split("/");
+    const urlArr = url.split("/");
+
+    const obj: { [key: string]: string } = {};
+
+    for (let i = 0; i < pathArr.length; i++) {
+      if (pathArr[i] !== urlArr[i]) {
+        obj[pathArr[i].replace(":", "")] = urlArr[i];
+      }
+    }
+
+    return (obj as T) || null;
   }
 
   public query<T>(): T | null {
