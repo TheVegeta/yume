@@ -4,7 +4,6 @@
   "description": "Yume (夢)",
   "main": "index.js",
   "scripts": {
-    "dev": "npx ts-node-dev src/yume.ts",
     "build": "tsup"
   },
   "repository": {

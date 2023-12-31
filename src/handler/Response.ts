@@ -8,6 +8,8 @@ import {
 export class Response {
   constructor(private _req: HttpRequest, private res: HttpResponse) {}
 
+  private statusCode: string = "200";
+
   pause() {
     return this.res.pause();
   }
@@ -17,7 +19,8 @@ export class Response {
   }
 
   writeStatus(status: number) {
-    return this.res.writeStatus(status.toString());
+    this.statusCode = status.toString();
+    return this;
   }
 
   writeHeader(key: RecognizedString, value: RecognizedString) {
@@ -32,7 +35,7 @@ export class Response {
     body?: RecognizedString | undefined,
     closeConnection?: boolean | undefined
   ) {
-    return this.res.end(body, closeConnection);
+    return this.res.writeStatus(this.statusCode).end(body, closeConnection);
   }
 
   endWithoutBody(
@@ -86,6 +89,11 @@ export class Response {
     return this.res.cork(cb);
   }
 
+  status(status: number) {
+    this.statusCode = status.toString();
+    return this;
+  }
+
   upgrade<UserData>(
     userData: UserData,
     secWebSocketKey: RecognizedString,
@@ -104,6 +112,7 @@ export class Response {
 
   json<T>(data: T) {
     return this.res
+      .writeStatus(this.statusCode)
       .writeHeader("content-type", "application/json")
       .end(JSON.stringify(data));
   }

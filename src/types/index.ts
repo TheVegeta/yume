@@ -1,10 +1,16 @@
 import { Request } from "../handler/Request";
 import { Response } from "../handler/Response";
 
+export type RequestMiddleware = (
+  req: Request,
+  res: Response,
+  next: VoidFunction
+) => void;
+
 export type RequestHandler = (
   req: Request,
   res: Response,
-  next?: VoidFunction
+  next?: VoidFunction | null | undefined | any
 ) => void;
 
 export type ErrorHandler = (err: any, req: Request, res: Response) => void;

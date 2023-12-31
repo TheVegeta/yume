@@ -1,6 +1,12 @@
 import { parse } from "regexparam";
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
-import { ErrorHandler, HttpMethod, RequestHandler, Routes } from "../types";
+import {
+  ErrorHandler,
+  HttpMethod,
+  RequestHandler,
+  RequestMiddleware,
+  Routes,
+} from "../types";
 import { Request } from "./Request";
 import { Response } from "./Response";
 
@@ -14,7 +20,7 @@ export class RouteHandler {
 
   constructor() {}
 
-  public use(handler: RequestHandler) {
+  public use(handler: RequestMiddleware) {
     this.middleware.push(handler);
   }
 
