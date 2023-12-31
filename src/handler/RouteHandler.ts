@@ -1,11 +1,14 @@
 import { parse } from "regexparam";
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
-import { HttpMethod, RequestHandler, Routes } from "../types";
+import { ErrorHandler, HttpMethod, RequestHandler, Routes } from "../types";
 import { Request } from "./Request";
 import { Response } from "./Response";
 
 export class RouteHandler {
   private routes: Routes[] = [];
+
+  private errorHandler: ErrorHandler | undefined;
+  private notFoundHandler: RequestHandler | undefined;
 
   private middleware: RequestHandler[] = [];
 
@@ -17,6 +20,14 @@ export class RouteHandler {
 
   public set(method: HttpMethod, path: string, ...handler: RequestHandler[]) {
     this.routes.push({ handler, method, pattern: parse(path).pattern, path });
+  }
+
+  public error(cb: ErrorHandler) {
+    this.errorHandler = cb;
+  }
+
+  public notFound(cb: RequestHandler) {
+    this.notFoundHandler = cb;
   }
 
   private applyMiddleware(req: Request, res: Response, done: VoidFunction) {
@@ -64,13 +75,25 @@ export class RouteHandler {
     const upRequest = new Request(req, res, handler?.path || "");
     const upResponse = new Response(req, res);
 
-    this.applyMiddleware(upRequest, upResponse, () => {
-      if (handler) {
-        this.applyHandler(upRequest, upResponse, handler.handler);
+    try {
+      this.applyMiddleware(upRequest, upResponse, () => {
+        if (handler) {
+          this.applyHandler(upRequest, upResponse, handler.handler);
+        } else {
+          if (this.notFoundHandler) {
+            this.notFoundHandler(upRequest, upResponse);
+          } else {
+            upResponse.writeStatus(404).end("Not Found");
+          }
+        }
+      });
+    } catch (err) {
+      if (this.errorHandler) {
+        this.errorHandler(err, upRequest, upResponse);
       } else {
-        res.end("Not Found");
+        upResponse.writeStatus(500).end("Err");
       }
-    });
+    }
   }
 
   private sortRoute() {

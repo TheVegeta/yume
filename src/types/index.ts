@@ -7,6 +7,8 @@ export type RequestHandler = (
   next?: VoidFunction
 ) => void;
 
+export type ErrorHandler = (err: any, req: Request, res: Response) => void;
+
 export interface Routes {
   pattern: RegExp;
   method: HttpMethod;

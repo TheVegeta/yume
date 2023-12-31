@@ -1,6 +1,6 @@
 import { App, RecognizedString, WebSocketBehavior } from "uWebSockets.js";
 import { RouteHandler } from "./handler/RouteHandler";
-import { RequestHandler } from "./types";
+import { ErrorHandler, RequestHandler } from "./types";
 
 class Yume extends RouteHandler {
   private app;
@@ -52,6 +52,14 @@ class Yume extends RouteHandler {
 
   public ws<T>(pattern: RecognizedString, behavior: WebSocketBehavior<T>) {
     this.app.ws(pattern, behavior);
+  }
+
+  public error(cb: ErrorHandler) {
+    super.error(cb);
+  }
+
+  public notFound(cb: RequestHandler) {
+    super.notFound(cb);
   }
 
   public listen(port: number, cb: VoidFunction) {

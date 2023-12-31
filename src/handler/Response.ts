@@ -1,82 +1,105 @@
-import { HttpRequest, HttpResponse } from "uWebSockets.js";
+import {
+  HttpRequest,
+  HttpResponse,
+  RecognizedString,
+  us_socket_context_t,
+} from "uWebSockets.js";
 
 export class Response {
   constructor(private _req: HttpRequest, private res: HttpResponse) {}
 
   pause() {
-    return this.res.pause;
+    return this.res.pause();
   }
 
   resume() {
-    return this.res.resume;
+    return this.res.resume();
   }
 
-  writeStatus() {
-    return this.res.writeStatus;
+  writeStatus(status: number) {
+    return this.res.writeStatus(status.toString());
   }
 
-  writeHeader() {
-    return this.res.writeHeader;
+  writeHeader(key: RecognizedString, value: RecognizedString) {
+    return this.res.writeHeader(key, value);
   }
 
-  write() {
-    return this.res.write;
+  write(chunk: RecognizedString) {
+    return this.res.write(chunk);
   }
 
-  end() {
-    return this.res.end;
+  end(
+    body?: RecognizedString | undefined,
+    closeConnection?: boolean | undefined
+  ) {
+    return this.res.end(body, closeConnection);
   }
 
-  endWithoutBody() {
-    return this.res.endWithoutBody;
+  endWithoutBody(
+    reportedContentLength?: number | undefined,
+    closeConnection?: boolean | undefined
+  ) {
+    return this.res.endWithoutBody(reportedContentLength, closeConnection);
   }
 
-  tryEnd() {
-    return this.res.tryEnd;
+  tryEnd(fullBodyOrChunk: RecognizedString, totalSize: number) {
+    return this.res.tryEnd(fullBodyOrChunk, totalSize);
   }
 
   close() {
-    return this.res.close;
+    return this.res.close();
   }
 
   getWriteOffset() {
-    return this.res.getWriteOffset;
+    return this.res.getWriteOffset();
   }
 
-  onWritable() {
-    return this.res.onWritable;
+  onWritable(handler: (offset: number) => boolean) {
+    return this.res.onWritable(handler);
   }
 
-  onAborted() {
-    return this.res.onAborted;
+  onAborted(handler: () => void) {
+    return this.res.onAborted(handler);
   }
 
-  onData() {
-    return this.res.onData;
+  onData(handler: (chunk: ArrayBuffer, isLast: boolean) => void) {
+    return this.res.onData(handler);
   }
 
   getRemoteAddress() {
-    return this.res.getRemoteAddress;
+    return this.res.getRemoteAddress();
   }
 
   getRemoteAddressAsText() {
-    return this.res.getRemoteAddressAsText;
+    return this.res.getRemoteAddressAsText();
   }
 
   getProxiedRemoteAddress() {
-    return this.res.getProxiedRemoteAddress;
+    return this.res.getProxiedRemoteAddress();
   }
 
   getProxiedRemoteAddressAsText() {
-    return this.res.getProxiedRemoteAddressAsText;
+    return this.res.getProxiedRemoteAddressAsText();
   }
 
-  cork() {
-    return this.res.cork;
+  cork(cb: () => void) {
+    return this.res.cork(cb);
   }
 
-  upgrade() {
-    return this.res.upgrade;
+  upgrade<UserData>(
+    userData: UserData,
+    secWebSocketKey: RecognizedString,
+    secWebSocketProtocol: RecognizedString,
+    secWebSocketExtensions: RecognizedString,
+    context: us_socket_context_t
+  ) {
+    return this.res.upgrade(
+      userData,
+      secWebSocketKey,
+      secWebSocketProtocol,
+      secWebSocketExtensions,
+      context
+    );
   }
 
   json<T>(data: T) {

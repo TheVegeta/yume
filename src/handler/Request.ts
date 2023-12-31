@@ -3,6 +3,7 @@ import {
   HttpRequest,
   HttpResponse,
   MultipartField,
+  RecognizedString,
   getParts,
 } from "uWebSockets.js";
 import { HttpContentType } from "../types";
@@ -15,32 +16,32 @@ export class Request {
     private path: string
   ) {}
 
-  public getHeader() {
-    return this.req.getHeader;
+  public getHeader(lowerCaseKey: RecognizedString) {
+    return this.req.getHeader(lowerCaseKey);
   }
 
-  public getParameter() {
-    return this.req.getParameter;
+  public getParameter(index: number) {
+    return this.req.getParameter(index);
   }
 
   public getUrl() {
-    return this.req.getUrl;
+    return this.req.getUrl();
   }
 
   public getMethod() {
-    return this.req.getMethod;
+    return this.req.getMethod();
   }
 
   public getCaseSensitiveMethod() {
-    return this.req.getCaseSensitiveMethod;
+    return this.req.getCaseSensitiveMethod();
   }
 
   public getQuery() {
-    return this.req.getQuery;
+    return this.req.getQuery();
   }
 
-  public setYield() {
-    return this.req.setYield;
+  public setYield(_yield: boolean) {
+    return this.req.setYield(_yield);
   }
 
   public headers<T>(): T | null {
