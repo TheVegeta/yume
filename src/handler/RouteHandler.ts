@@ -4,7 +4,7 @@ import {
   ErrorHandler,
   HttpMethod,
   RequestHandler,
-  RequestMiddleware,
+  MiddlewareHandler,
   Routes,
 } from "../types";
 import { Request } from "./Request";
@@ -20,7 +20,7 @@ export class RouteHandler {
 
   constructor() {}
 
-  public use(handler: RequestMiddleware) {
+  public use(handler: MiddlewareHandler) {
     this.middleware.push(handler);
   }
 

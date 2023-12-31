@@ -1,7 +1,7 @@
 import { Request } from "../handler/Request";
 import { Response } from "../handler/Response";
 
-export type RequestMiddleware = (
+export type MiddlewareHandler = (
   req: Request,
   res: Response,
   next: VoidFunction
