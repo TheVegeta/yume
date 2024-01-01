@@ -6,8 +6,10 @@
 
 - [Hello Yume (夢)](#hello-yume)
 - [Applying middleware](#applying-middleware)
+- [Dynamic Routes](#dynamic-routes)
+- [Query Parameter](#query-parameter)
 - [Multipart upload](#multipart-upload)
-- [Applying cors](#applying-cors)
+- [cors](#applying-cors)
 - [Handling 404 route](#handling-404-route)
 - [Handling globle error](#handling-globle-error)
 - [GraphQL](#graphql)
@@ -36,6 +38,25 @@ yume.use((req, res, next) => {
 });
 ```
 
+### Dynamic Routes
+
+```ts
+yume.get("/post/:id", async (req, res) => {
+  const { id } = req.getParams();
+  return res.json({ id });
+});
+```
+
+### Query Parameter
+
+```ts
+// ?page=2&limit=3
+yume.get("/post", async (req, res) => {
+  const { page, limit } = req.query();
+  return res.json({ page, limit });
+});
+```
+
 ### Multipart upload
 
 ```ts
@@ -43,14 +64,14 @@ yume.post("/upload", async (req, res) => {
   const filesArray = await req.file();
 
   filesArray?.map((file: MultipartField) => {
-    // do something megical
+    // do something magical
   });
 
   res.json({ status: true, msg: "file uploaded successfully", data: {} });
 });
 ```
 
-### Applying cors
+### cors
 
 ```ts
 yume.use((req, res, next) => {
