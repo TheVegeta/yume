@@ -85,7 +85,7 @@ export class Request {
   }
 
   public async body<T>(): Promise<T | null> {
-    return await new Promise<T | null>(async (resolve) => {
+    return new Promise<T | null>(async (resolve) => {
       try {
         const reqType = this.req.getHeader("content-type") as HttpContentType;
 

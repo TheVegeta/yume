@@ -2,7 +2,9 @@
   "name": "yume",
   "version": "0.0.0",
   "description": "Yume (夢)",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup"
   },
