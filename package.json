@@ -1,20 +1,21 @@
 {
-  "name": "yume",
+  "name": "yume-server",
   "version": "0.0.0",
   "description": "Yume (夢)",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "private": false,
   "scripts": {
     "build": "tsup"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheVegeta/Yume"
+    "url": "git+https://github.com/TheVegeta/Yume.git"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "regexparam": "^2.0.1",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.34.0"
