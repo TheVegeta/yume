@@ -59,14 +59,11 @@ export class RouteHandler {
     }
   }
 
-  private matchRoute(
-    path: string,
-    method: HttpMethod
-  ): { handler: RequestHandler[]; path: string } | undefined {
+  private matchRoute(path: string, method: HttpMethod): Routes | undefined {
     for (let i = 0; i < this.routes.length; i++) {
       if (this.routes[i].method === method || this.routes[i].method === "all") {
         if (this.routes[i].pattern.test(path)) {
-          return { handler: this.routes[i].handler, path: this.routes[i].path };
+          return this.routes[i];
         }
       }
     }

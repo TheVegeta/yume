@@ -58,11 +58,8 @@ export class Request {
   }
 
   public getParams<T>(): T | null {
-    const url = this.req.getUrl();
-    const path = this.path;
-
-    const pathArr = path.split("/");
-    const urlArr = url.split("/");
+    const urlArr = this.req.getUrl().split("/");
+    const pathArr = this.path.split("/");
 
     const obj: { [key: string]: string } = {};
 
