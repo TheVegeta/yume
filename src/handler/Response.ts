@@ -6,7 +6,7 @@ import {
 } from "uWebSockets.js";
 
 export class Response {
-  constructor(private _req: HttpRequest, private res: HttpResponse) {}
+  constructor(private res: HttpResponse) {}
 
   private statusCode: string = "200";
 

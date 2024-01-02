@@ -6,14 +6,14 @@ import {
   RecognizedString,
   getParts,
 } from "uWebSockets.js";
-import { HttpContentType } from "../types";
+import { HttpContentType, Routes } from "../types";
 import { handleArrayBuffer, voidFunction } from "../utils";
 
 export class Request {
   constructor(
     private req: HttpRequest,
     private res: HttpResponse,
-    private path: string
+    private handler: Routes | undefined
   ) {}
 
   public getHeader(lowerCaseKey: RecognizedString) {
@@ -59,7 +59,7 @@ export class Request {
 
   public getParams<T>(): T | null {
     const urlArr = this.req.getUrl().split("/");
-    const pathArr = this.path.split("/");
+    const pathArr = (this.handler?.path || "").split("/");
 
     const obj: { [key: string]: string } = {};
 

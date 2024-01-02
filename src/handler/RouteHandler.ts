@@ -75,8 +75,8 @@ export class RouteHandler {
 
     const handler = this.matchRoute(url, method);
 
-    const upRequest = new Request(req, res, handler?.path || "");
-    const upResponse = new Response(req, res);
+    const upRequest = new Request(req, res, handler);
+    const upResponse = new Response(res);
 
     try {
       this.applyMiddleware(upRequest, upResponse, () => {
