@@ -63,8 +63,6 @@ class Yume extends RouteHandler {
   }
 
   public listen(port: number, cb: VoidFunction) {
-    super.bootstrap();
-
     this.app.any("/*", (req, res) => {
       super.processRequest(res, req);
     });

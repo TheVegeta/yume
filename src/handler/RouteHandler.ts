@@ -101,12 +101,4 @@ export class RouteHandler {
       }
     }
   }
-
-  private sortRoute() {
-    this.routes = this.routes.sort((_) => (_.method === "all" ? 1 : 0));
-  }
-
-  public bootstrap() {
-    this.sortRoute();
-  }
 }
