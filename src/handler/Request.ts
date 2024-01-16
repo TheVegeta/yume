@@ -61,11 +61,11 @@ export class Request {
     const urlArr = this.req.getUrl().split("/");
     const pathArr = (this.handler?.path || "").split("/");
 
-    const obj: { [key: string]: string } = {};
+    const obj: Record<string, string> = {};
 
     for (let i = 0; i < pathArr.length; i++) {
       if (pathArr[i] !== urlArr[i]) {
-        obj[pathArr[i].replace(":", "")] = urlArr[i];
+        obj[pathArr[i].substring(1)] = urlArr[i];
       }
     }
 
@@ -74,18 +74,17 @@ export class Request {
 
   public query<T>(): T | null {
     try {
-      const { query } = url.parse(`?${this.req.getQuery()}`, true);
-      return (query as T) || null;
+      return (url.parse(`?${this.req.getQuery()}`, true).query as T) || null;
     } catch (err) {
       return null;
     }
   }
 
   public async body<T>(): Promise<T | null> {
+    const reqType = this.req.getHeader("content-type") as HttpContentType;
+
     return new Promise<T | null>(async (resolve) => {
       try {
-        const reqType = this.req.getHeader("content-type") as HttpContentType;
-
         this.res
           .onData((data) => {
             const response = handleArrayBuffer(data);
@@ -93,8 +92,7 @@ export class Request {
             if (reqType === "application/json") {
               resolve(JSON.parse(response) as T);
             } else if (reqType === "application/x-www-form-urlencoded") {
-              const { query } = url.parse(`?${response}`, true);
-              resolve(query as T);
+              resolve(url.parse(`?${response}`, true).query as T);
             } else {
               console.error("Unsupported content type: " + reqType);
             }
@@ -114,13 +112,10 @@ export class Request {
 
       this.res
         .onData((ab, isLast) => {
-          const chunk = Buffer.from(ab);
-          buffer = Buffer.concat([buffer, chunk]);
+          buffer = Buffer.concat([buffer, Buffer.from(ab)]);
 
           if (isLast) {
-            const data = getParts(buffer, header);
-
-            resolve(data);
+            resolve(getParts(buffer, header));
           }
         })
         .onAborted(voidFunction);

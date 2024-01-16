@@ -3,8 +3,8 @@ import { HttpRequest, HttpResponse } from "uWebSockets.js";
 import {
   ErrorHandler,
   HttpMethod,
-  RequestHandler,
   MiddlewareHandler,
+  RequestHandler,
   Routes,
 } from "../types";
 import { Request } from "./Request";
@@ -41,9 +41,7 @@ export class RouteHandler {
       done();
     } else {
       for (let i = 0; i < this.middleware.length; i++) {
-        const currentMiddleware = this.middleware[i];
-
-        currentMiddleware(req, res, () => {
+        this.middleware[i](req, res, () => {
           if (i === this.middleware.length - 1) {
             done();
           }
@@ -54,8 +52,7 @@ export class RouteHandler {
 
   private applyHandler(req: Request, res: Response, handler: RequestHandler[]) {
     for (let i = 0; i < handler.length; i++) {
-      const currentHandler = handler[i];
-      currentHandler(req, res);
+      handler[i](req, res);
     }
   }
 

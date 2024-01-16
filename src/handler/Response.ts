@@ -1,5 +1,4 @@
 import {
-  HttpRequest,
   HttpResponse,
   RecognizedString,
   us_socket_context_t,
