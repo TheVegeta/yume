@@ -7,14 +7,15 @@ import {
   RequestHandler,
   Routes,
 } from "../types";
+import { errHandlerFn, notFoundFn } from "../utils";
 import { Request } from "./Request";
 import { Response } from "./Response";
 
 export class RouteHandler {
   private routes: Routes[] = [];
 
-  private errorHandler: ErrorHandler | undefined;
-  private notFoundHandler: RequestHandler | undefined;
+  private errorHandler: ErrorHandler = errHandlerFn;
+  private notFoundHandler: RequestHandler = notFoundFn;
 
   private middleware: RequestHandler[] = [];
 
@@ -72,27 +73,19 @@ export class RouteHandler {
 
     const handler = this.matchRoute(url, method);
 
-    const upRequest = new Request(req, res, handler);
-    const upResponse = new Response(res);
+    const request = new Request(req, res, handler);
+    const response = new Response(res);
 
     try {
-      this.applyMiddleware(upRequest, upResponse, () => {
+      this.applyMiddleware(request, response, () => {
         if (handler) {
-          this.applyHandler(upRequest, upResponse, handler.handler);
+          this.applyHandler(request, response, handler.handler);
         } else {
-          if (this.notFoundHandler) {
-            this.notFoundHandler(upRequest, upResponse);
-          } else {
-            upResponse.writeStatus(404).end("Not Found");
-          }
+          this.notFoundHandler(request, response);
         }
       });
     } catch (err) {
-      if (this.errorHandler) {
-        this.errorHandler(err, upRequest, upResponse);
-      } else {
-        upResponse.writeStatus(500).end("Err");
-      }
+      this.errorHandler(err, request, response);
     }
   }
 }
