@@ -13,7 +13,8 @@ export class RouteHandler {
   private notFoundHandler: IRequestHandler = notFoundFn;
 
   public set(method: HttpMethod, path: string, ...handler: IRequestHandler[]) {
-    this.routes.push({ handler, method, path, regExp: parse(path).pattern });
+    const { keys, pattern } = parse(path);
+    this.routes.push({ handler, method, path, regExp: pattern, keys });
   }
 
   public use(middleware: IRequestHandler) {
@@ -72,7 +73,7 @@ export class RouteHandler {
 
     const route = this.findRoutes(req.url, req.method);
 
-    if (route?.path) req._setPath(route?.path);
+    if (route) req._setRegexparam(route.keys, route.regExp);
 
     try {
       this.applyMiddleware(req, res, () => {

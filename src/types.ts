@@ -12,6 +12,7 @@ export interface IRoute {
   path: string;
   handler: IRequestHandler[];
   method: HttpMethod;
+  keys: string[];
 }
 
 export type HttpMethod =

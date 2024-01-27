@@ -7,20 +7,22 @@ import {
   getParts,
 } from "uWebSockets.js";
 import { HttpContentType, HttpMethod } from "../types";
-import { handleArrayBuffer, voidFunction } from "../utils";
+import { exec, handleArrayBuffer, voidFunction } from "../utils";
 
 export class Request {
   public url: string;
   public method: HttpMethod;
-  private path: string = "";
+  public keys: string[] = [];
+  public regExp: RegExp | undefined;
 
   constructor(private req: HttpRequest, private res: HttpResponse) {
     this.url = req.getUrl();
     this.method = req.getMethod() as HttpMethod;
   }
 
-  public _setPath(path: string | undefined) {
-    if (path) this.path = path;
+  public _setRegexparam(keys: string[], regExp: RegExp) {
+    this.keys = keys;
+    this.regExp = regExp;
   }
 
   public getHeader(lowerCaseKey: RecognizedString) {
@@ -62,20 +64,7 @@ export class Request {
   }
 
   public getParams<T>(): T | null {
-    if (!this.path) return null;
-
-    const urlArr = this.req.getUrl().split("/");
-    const pathArr = this.path.split("/");
-
-    const obj: Record<string, string> = {};
-
-    for (let i = 0; i < pathArr.length; i++) {
-      if (pathArr[i] !== urlArr[i]) {
-        obj[pathArr[i].substring(1)] = urlArr[i];
-      }
-    }
-
-    return (obj as T) || null;
+    return exec(this.url, this.regExp, this.keys) as T;
   }
 
   public query<T>(): T | null {

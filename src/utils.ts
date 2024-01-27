@@ -17,7 +17,13 @@ export const handleArrayBuffer = (message: ArrayBuffer | string) => {
 
 export const voidFunction = () => {};
 
-export const exec = (path: string, pattern: RegExp, keys: string[]) => {
+export const exec = (
+  path: string,
+  pattern: RegExp | undefined,
+  keys: string[]
+) => {
+  if (typeof pattern === "undefined") return {};
+
   let i = 0;
   const out: Record<string, string | null> = {};
 
