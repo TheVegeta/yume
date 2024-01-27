@@ -6,15 +6,22 @@ import {
   RecognizedString,
   getParts,
 } from "uWebSockets.js";
-import { HttpContentType, Routes } from "../types";
+import { HttpContentType, HttpMethod } from "../types";
 import { handleArrayBuffer, voidFunction } from "../utils";
 
 export class Request {
-  constructor(
-    private req: HttpRequest,
-    private res: HttpResponse,
-    private handler: Routes | undefined
-  ) {}
+  public url: string;
+  public method: HttpMethod;
+  private path: string = "";
+
+  constructor(private req: HttpRequest, private res: HttpResponse) {
+    this.url = req.getUrl();
+    this.method = req.getMethod() as HttpMethod;
+  }
+
+  public _setPath(path: string | undefined) {
+    if (path) this.path = path;
+  }
 
   public getHeader(lowerCaseKey: RecognizedString) {
     return this.req.getHeader(lowerCaseKey);
@@ -45,21 +52,20 @@ export class Request {
   }
 
   public headers<T>(): T | null {
-    try {
-      const obj: any = {};
-      this.req.forEach((k, v) => {
-        obj[k] = v;
-      });
+    const obj: any = {};
 
-      return obj as T;
-    } catch (err) {
-      return null;
-    }
+    this.req.forEach((k, v) => {
+      obj[k] = v;
+    });
+
+    return obj as T;
   }
 
   public getParams<T>(): T | null {
+    if (!this.path) return null;
+
     const urlArr = this.req.getUrl().split("/");
-    const pathArr = (this.handler?.path || "").split("/");
+    const pathArr = this.path.split("/");
 
     const obj: Record<string, string> = {};
 

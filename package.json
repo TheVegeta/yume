@@ -18,10 +18,10 @@
   "license": "MIT",
   "dependencies": {
     "regexparam": "^3.0.0",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.40.0"
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.41.0"
   },
   "devDependencies": {
-    "@types/node": "^20.9.1",
+    "@types/node": "^20.11.7",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   }

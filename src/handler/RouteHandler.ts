@@ -1,91 +1,89 @@
 import { parse } from "regexparam";
 import { HttpRequest, HttpResponse } from "uWebSockets.js";
-import {
-  ErrorHandler,
-  HttpMethod,
-  MiddlewareHandler,
-  RequestHandler,
-  Routes,
-} from "../types";
+import { HttpMethod, IErrorHandler, IRequestHandler, IRoute } from "../types";
 import { errHandlerFn, notFoundFn } from "../utils";
 import { Request } from "./Request";
 import { Response } from "./Response";
 
 export class RouteHandler {
-  private routes: Routes[] = [];
+  private routes: IRoute[] = [];
+  private middlewares: IRequestHandler[] = [];
 
-  private errorHandler: ErrorHandler = errHandlerFn;
-  private notFoundHandler: RequestHandler = notFoundFn;
+  private errorHandler: IErrorHandler = errHandlerFn;
+  private notFoundHandler: IRequestHandler = notFoundFn;
 
-  private middleware: RequestHandler[] = [];
-
-  constructor() {}
-
-  public use(handler: MiddlewareHandler) {
-    this.middleware.push(handler);
+  public set(method: HttpMethod, path: string, ...handler: IRequestHandler[]) {
+    this.routes.push({ handler, method, path, regExp: parse(path).pattern });
   }
 
-  public set(method: HttpMethod, path: string, ...handler: RequestHandler[]) {
-    this.routes.push({ handler, method, pattern: parse(path).pattern, path });
+  public use(middleware: IRequestHandler) {
+    this.middlewares.push(middleware);
   }
 
-  public error(cb: ErrorHandler) {
+  public error(cb: IErrorHandler) {
     this.errorHandler = cb;
   }
 
-  public notFound(cb: RequestHandler) {
+  public notFound(cb: IRequestHandler) {
     this.notFoundHandler = cb;
   }
 
+  private findRoutes(path: string, method: HttpMethod): IRoute | undefined {
+    for (const route of this.routes) {
+      if (
+        (route.method === method || route.method === "all") &&
+        route.regExp.test(path)
+      ) {
+        return route;
+      }
+    }
+  }
+
   private applyMiddleware(req: Request, res: Response, done: VoidFunction) {
-    if (this.middleware.length === 0) {
-      done();
-    } else {
-      for (let i = 0; i < this.middleware.length; i++) {
-        this.middleware[i](req, res, () => {
-          if (i === this.middleware.length - 1) {
-            done();
-          }
-        });
+    if (this.middlewares.length === 0) return done();
+
+    for (let i = 0; i < this.middlewares.length; i++) {
+      this.middlewares[i](req, res, () => {
+        if (i === this.middlewares.length - 1) done();
+      });
+    }
+  }
+
+  private applyHandler(
+    req: Request,
+    res: Response,
+    handlers: IRequestHandler[]
+  ) {
+    let index = 0;
+
+    const next = () => {
+      index++;
+      if (index < handlers.length) {
+        handlers[index](req, res, next);
       }
-    }
+    };
+
+    handlers[index](req, res, next);
   }
 
-  private applyHandler(req: Request, res: Response, handler: RequestHandler[]) {
-    for (let i = 0; i < handler.length; i++) {
-      handler[i](req, res);
-    }
-  }
+  public processRoute(request: HttpRequest, response: HttpResponse) {
+    const req = new Request(request, response);
+    const res = new Response(response);
 
-  private matchRoute(path: string, method: HttpMethod): Routes | undefined {
-    for (let i = 0; i < this.routes.length; i++) {
-      if (this.routes[i].method === method || this.routes[i].method === "all") {
-        if (this.routes[i].pattern.test(path)) {
-          return this.routes[i];
-        }
-      }
-    }
-  }
+    const route = this.findRoutes(req.url, req.method);
 
-  public processRequest(req: HttpRequest, res: HttpResponse) {
-    const url = req.getUrl();
-    const method = req.getMethod() as HttpMethod;
-
-    const handler = this.matchRoute(url, method);
-
-    const request = new Request(req, res, handler);
-    const response = new Response(res);
+    if (route?.path) req._setPath(route?.path);
 
     try {
-      this.applyMiddleware(request, response, () => {
-        if (handler) {
-          this.applyHandler(request, response, handler.handler);
+      this.applyMiddleware(req, res, () => {
+        if (route) {
+          this.applyHandler(req, res, route.handler);
         } else {
-          this.notFoundHandler(request, response);
+          this.notFoundHandler(req, res);
         }
       });
     } catch (err) {
-      this.errorHandler(err, request, response);
+      this.errorHandler(err, req, res);
     }
   }
 }
