@@ -31,4 +31,5 @@ export type IErrorHandler = (err: any, req: Request, res: Response) => void;
 
 export type HttpContentType =
   | "application/x-www-form-urlencoded"
-  | "application/json";
+  | "application/json"
+  | string;

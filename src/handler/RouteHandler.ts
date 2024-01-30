@@ -77,11 +77,8 @@ export class RouteHandler {
 
     try {
       this.applyMiddleware(req, res, () => {
-        if (route) {
-          this.applyHandler(req, res, route.handler);
-        } else {
-          this.notFoundHandler(req, res);
-        }
+        if (route) this.applyHandler(req, res, route.handler);
+        else this.notFoundHandler(req, res);
       });
     } catch (err) {
       this.errorHandler(err, req, res);

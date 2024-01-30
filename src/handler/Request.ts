@@ -1,4 +1,3 @@
-import url from "node:url";
 import {
   HttpRequest,
   HttpResponse,
@@ -6,8 +5,9 @@ import {
   RecognizedString,
   getParts,
 } from "uWebSockets.js";
+import url from "url";
 import { HttpContentType, HttpMethod } from "../types";
-import { exec, handleArrayBuffer, voidFunction } from "../utils";
+import { exec, handleArrayBuffer } from "../utils";
 
 export class Request {
   public url: string;
@@ -67,53 +67,56 @@ export class Request {
     return exec(this.url, this.regExp, this.keys) as T;
   }
 
-  public query<T>(): T | null {
-    try {
-      return (url.parse(`?${this.req.getQuery()}`, true).query as T) || null;
-    } catch (err) {
-      return null;
-    }
+  public query<T>(): T {
+    return url.parse(`?${this.req.getQuery()}`, true).query as T;
+  }
+
+  public async rawBody<T>(): Promise<T | null> {
+    return new Promise<T | null>(async (resolve, reject) => {
+      this.res.onData((data) => resolve(handleArrayBuffer(data) as T));
+      this.res.onAborted(() => reject(null));
+    });
   }
 
   public async body<T>(): Promise<T | null> {
     const reqType = this.req.getHeader("content-type") as HttpContentType;
 
-    return new Promise<T | null>(async (resolve) => {
-      try {
-        this.res
-          .onData((data) => {
-            const response = handleArrayBuffer(data);
+    return new Promise<T | null>(async (resolve, reject) => {
+      this.res.onData((data) => {
+        const response = handleArrayBuffer(data);
 
-            if (reqType === "application/json") {
-              resolve(JSON.parse(response) as T);
-            } else if (reqType === "application/x-www-form-urlencoded") {
-              resolve(url.parse(`?${response}`, true).query as T);
-            } else {
-              console.error("Unsupported content type: " + reqType);
-            }
-          })
-          .onAborted(voidFunction);
-      } catch (err) {
-        resolve(null);
-      }
+        if (reqType === "application/json") {
+          resolve(JSON.parse(response) as T);
+        } else if (reqType === "application/x-www-form-urlencoded") {
+          resolve(url.parse(`?${response}`, true).query as T);
+        } else if (reqType.includes("text/plain;")) {
+          resolve(response as T);
+        } else {
+          resolve(response as T);
+        }
+      });
+
+      this.res.onAborted(() => reject(null));
     });
   }
 
   public async file(): Promise<MultipartField[] | undefined> {
     const header = this.req.getHeader("content-type");
 
-    return await new Promise<MultipartField[] | undefined>((resolve) => {
-      let buffer = Buffer.from("");
+    return await new Promise<MultipartField[] | undefined>(
+      (resolve, reject) => {
+        let buffer = Buffer.from("");
 
-      this.res
-        .onData((ab, isLast) => {
+        this.res.onData((ab, isLast) => {
           buffer = Buffer.concat([buffer, Buffer.from(ab)]);
 
           if (isLast) {
             resolve(getParts(buffer, header));
           }
-        })
-        .onAborted(voidFunction);
-    });
+        });
+
+        this.res.onAborted(() => reject(null));
+      }
+    );
   }
 }

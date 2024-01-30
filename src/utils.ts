@@ -1,16 +1,16 @@
 import { Request } from "./handler/Request";
 import { Response } from "./handler/Response";
 
-export const notFoundFn = (req: Request, res: Response) =>
-  res.writeStatus(404).end("Not Found");
+export const notFoundFn = (_req: Request, res: Response) => {
+  res.status(404).end("Not Found");
+};
 
-export const errHandlerFn = (err: any, req: Request, res: Response) =>
-  res.writeStatus(500).end("Error");
+export const errHandlerFn = (_err: any, _req: Request, res: Response) => {
+  res.status(500).end("Error");
+};
 
 export const handleArrayBuffer = (message: ArrayBuffer | string) => {
-  if (message instanceof ArrayBuffer) {
-    return new TextDecoder().decode(message);
-  }
+  if (message instanceof ArrayBuffer) return new TextDecoder().decode(message);
 
   return message;
 };

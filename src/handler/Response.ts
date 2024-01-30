@@ -7,8 +7,6 @@ import {
 export class Response {
   constructor(private res: HttpResponse) {}
 
-  private statusCode: string = "200";
-
   pause() {
     return this.res.pause();
   }
@@ -17,9 +15,8 @@ export class Response {
     return this.res.resume();
   }
 
-  writeStatus(status: number) {
-    this.statusCode = status.toString();
-    return this;
+  writeStatus(status: RecognizedString) {
+    return this.res.writeStatus(status);
   }
 
   writeHeader(key: RecognizedString, value: RecognizedString) {
@@ -28,13 +25,6 @@ export class Response {
 
   write(chunk: RecognizedString) {
     return this.res.write(chunk);
-  }
-
-  end(
-    body?: RecognizedString | undefined,
-    closeConnection?: boolean | undefined
-  ) {
-    return this.res.writeStatus(this.statusCode).end(body, closeConnection);
   }
 
   endWithoutBody(
@@ -89,7 +79,7 @@ export class Response {
   }
 
   status(status: number) {
-    this.statusCode = status.toString();
+    this.res.status(status);
     return this;
   }
 
@@ -109,9 +99,15 @@ export class Response {
     );
   }
 
+  end(
+    body?: RecognizedString | undefined,
+    closeConnection?: boolean | undefined
+  ) {
+    return this.res.end(body, closeConnection);
+  }
+
   json<T>(data: T) {
     return this.res
-      .writeStatus(this.statusCode)
       .writeHeader("content-type", "application/json")
       .end(JSON.stringify(data));
   }

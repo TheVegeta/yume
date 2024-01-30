@@ -15,14 +15,14 @@ npm i yume-server
 ```js
 import { Yume } from "yume-server";
 
-const yume = new Yume();
+const app = new Yume();
 const PORT = 3000;
 
-yume.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.json({ hello: "Yume 夢" });
 });
 
-yume.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`>started @${PORT}`);
 });
 ```
@@ -34,26 +34,26 @@ yume.listen(PORT, () => {
 ```js
 
 // HTTP methods
-yume.get("/", (req, res) => res.end("GET /"));
-yume.post("/", (req, res) => res.end("POST /"));
-yume.put("/", (req, res) => res.end("PUT /"));
-yume.del("/", (req, res) => res.end("DELETE /"));
+app.get("/", (req, res) => res.end("GET /"));
+app.post("/", (req, res) => res.end("POST /"));
+app.put("/", (req, res) => res.end("PUT /"));
+app.del("/", (req, res) => res.end("DELETE /"));
 
 // All methods
-yume.all("/", (req, res) => res.end("All /"));
+app.all("/", (req, res) => res.end("All /"));
 
 // Dynamics routes
-yume.get("/anime/:id", (req, res) => {
+app.get("/anime/:id", (req, res) => {
   const params = req.getParams<{ id: string }>();
   res.end(`GET /anime/${params?.id}`);
 });
-yume.get("/anime/:studio/:year", (req, res) => {
+app.get("/anime/:studio/:year", (req, res) => {
   const params = req.getParams<{ studio: string; year: string }>();
   res.end(`GET /anime/${params?.studio}/${params?.year}`);
 });
 
 // Wildcard
-yume.get("/users/*", (req, res) => res.end(`GET /users/*`));
+app.get("/users/*", (req, res) => res.end(`GET /users/*`));
 ```
 
 For more details, [see](https://github.com/lukeed/regexparam#usage).
@@ -64,7 +64,7 @@ For more details, [see](https://github.com/lukeed/regexparam#usage).
 
 ```js
 // return all the headers
-yume.get("/", (req, res) => {
+app.get("/", (req, res) => {
   const headers = req.headers();
   return res.json({ success: true, headers });
 });
@@ -74,7 +74,7 @@ yume.get("/", (req, res) => {
 
 ```js
 // return all the params
-yume.get("/anime/:id", (req, res) => {
+app.get("/anime/:id", (req, res) => {
   const params = req.getParams<{ id: string }>();
   res.end(`GET /anime/${params?.id}`);
 });
@@ -84,7 +84,7 @@ yume.get("/anime/:id", (req, res) => {
 
 ```js
 // ?page=2&limit=3
-yume.get("/post", async (req, res) => {
+app.get("/post", async (req, res) => {
   const { page, limit } = req.query();
   return res.json({ page, limit });
 });
@@ -94,9 +94,19 @@ yume.get("/post", async (req, res) => {
 
 ```js
 // return all the body
-yume.post("/user", async (req, res) => {
+app.post("/user", async (req, res) => {
   const body = await req.body();
   return res.json({ success: true, body });
+});
+```
+
+#### Raw body
+
+```js
+// return all the body
+app.post("/user", async (req, res) => {
+  const body = await req.rawBody();
+  return res.end(body);
 });
 ```
 
@@ -104,12 +114,12 @@ Supported methods
 
 - application/x-www-form-urlencoded
 - application/json
+- text/plain
 
 ## Thanks
 
 - [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js)
 - [regexparam](https://github.com/lukeed/regexparam)
-- [tsup](https://github.com/egoist/tsup)
 
 ## License
 
