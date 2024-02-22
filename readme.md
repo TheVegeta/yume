@@ -20,7 +20,6 @@ npm i yume-server
 - [cors](#applying-cors)
 - [Handling 404 route](#handling-404-route)
 - [Handling globle error](#handling-globle-error)
-- [GraphQL](#graphql)
 
 ### Hello Yume
 
@@ -104,39 +103,6 @@ yume.notFound((req, res) => {
 yume.error((err, req, res) => {
   console.error(err);
   res.status(500).end("Internal server error");
-});
-```
-
-### GraphQL
-
-```ts
-const yume = new Yume();
-const PORT = process.env.PORT || 8080;
-
-const yoga = createYoga<IGqlContext>({
-  schema,
-});
-
-yume.all("/graphql", async (req, res) => {
-  const url = req.getUrl();
-  const method = req.getMethod();
-  const body = await req.body();
-
-  const response = await yoga.fetch(
-    url,
-    {
-      method: method,
-      headers: req.headers,
-      body: JSON.stringify(body),
-    },
-    { req, res }
-  );
-
-  return res.status(response.status).end(await response.text());
-});
-
-yume.listen(8080, () => {
-  console.log(`>started ${PORT}`);
 });
 ```
 
