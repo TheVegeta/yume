@@ -28,7 +28,7 @@ export class Response {
   }
 
   public redirect(url: string) {
-    this.uWebSocketsRes.writeStatus("302").writeHeader("location", url);
+    this.uWebSocketsRes.writeStatus("302").writeHeader("location", url).end("");
   }
 
   public status(status: number) {

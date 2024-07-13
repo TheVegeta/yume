@@ -66,19 +66,15 @@ export class Request {
 
   public async getFile(): Promise<MultipartField[] | undefined> {
     const header = this.uWebSocketsReq.getHeader("content-type");
-
     return await new Promise<MultipartField[] | undefined>(
       (resolve, reject) => {
         let buffer = Buffer.from("");
-
         this.uWebSocketsRes.onData((ab, isLast) => {
           buffer = Buffer.concat([buffer, Buffer.from(ab)]);
-
           if (isLast) {
             resolve(getParts(buffer, header));
           }
         });
-
         this.uWebSocketsRes.onAborted(() => reject(null));
       }
     );
