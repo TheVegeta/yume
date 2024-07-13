@@ -15,6 +15,12 @@ export type IRequestHandler = (
   next?: VoidFunction
 ) => void;
 
+export type IMiddlewareHandler = (
+  req: Request,
+  res: Response,
+  next: VoidFunction
+) => void;
+
 export type HttpMethod =
   | "get"
   | "head"

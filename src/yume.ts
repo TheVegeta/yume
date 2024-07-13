@@ -2,13 +2,18 @@ import { parse } from "regexparam";
 import { App, AppOptions, HttpRequest, HttpResponse } from "uWebSockets.js";
 import { Request } from "./handler/Request";
 import { Response } from "./handler/Response";
-import { HttpMethod, IRequestHandler, IRoute } from "./types";
+import {
+  HttpMethod,
+  IMiddlewareHandler,
+  IRequestHandler,
+  IRoute,
+} from "./types";
 import { notFoundFn } from "./utils";
 
 export class Yume {
   private app;
   private routes: IRoute[] = [];
-  private middlewares: IRequestHandler[] = [];
+  private middlewares: IMiddlewareHandler[] = [];
   private notFoundHandler: IRequestHandler = notFoundFn;
 
   constructor(options: AppOptions = {}) {
@@ -20,7 +25,7 @@ export class Yume {
     this.routes.push({ regExp: pattern, keys, handler, method, path });
   }
 
-  public use(middleware: IRequestHandler) {
+  public use(middleware: IMiddlewareHandler) {
     this.middlewares.push(middleware);
   }
 
