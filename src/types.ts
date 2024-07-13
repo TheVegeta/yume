@@ -1,12 +1,6 @@
 import { Request } from "./handler/Request";
 import { Response } from "./handler/Response";
 
-export type IRequestHandler = (
-  req: Request,
-  res: Response,
-  next?: VoidFunction
-) => void;
-
 export interface IRoute {
   regExp: RegExp;
   path: string;
@@ -15,14 +9,20 @@ export interface IRoute {
   keys: string[];
 }
 
+export type IRequestHandler = (
+  req: Request,
+  res: Response,
+  next?: VoidFunction
+) => void;
+
 export type HttpMethod =
   | "get"
+  | "head"
   | "post"
   | "put"
   | "patch"
   | "delete"
   | "options"
-  | "head"
   | "connect"
   | "trace"
   | "all";

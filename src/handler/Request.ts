@@ -1,94 +1,58 @@
 import {
+  getParts,
   HttpRequest,
   HttpResponse,
   MultipartField,
-  RecognizedString,
-  getParts,
 } from "uWebSockets.js";
-import url from "url";
-import { HttpContentType, HttpMethod } from "../types";
-import { exec, handleArrayBuffer } from "../utils";
+import URL from "url";
+import { HttpContentType } from "../types";
 
 export class Request {
-  public url: string;
-  public method: HttpMethod;
-  public keys: string[] = [];
-  public regExp: RegExp | undefined;
+  public uWebSocketsReq;
+  private uWebSocketsRes;
 
-  constructor(private req: HttpRequest, private res: HttpResponse) {
+  public url = "";
+  public method = "";
+
+  private keys: string[] = [];
+  private regExp: RegExp = new RegExp("");
+
+  constructor(req: HttpRequest, res: HttpResponse) {
+    this.uWebSocketsReq = req;
+    this.uWebSocketsRes = res;
+
     this.url = req.getUrl();
-    this.method = req.getMethod() as HttpMethod;
+    this.method = req.getMethod();
   }
 
-  public _setRegexparam(keys: string[], regExp: RegExp) {
-    this.keys = keys;
+  public setRegExp(regExp: RegExp) {
     this.regExp = regExp;
   }
 
-  public getHeader(lowerCaseKey: RecognizedString) {
-    return this.req.getHeader(lowerCaseKey);
+  public setkeys(keys: string[]) {
+    this.keys = keys;
   }
 
-  public getParameter(index: number) {
-    return this.req.getParameter(index);
-  }
-
-  public getUrl() {
-    return this.req.getUrl();
-  }
-
-  public getMethod() {
-    return this.req.getMethod();
-  }
-
-  public getCaseSensitiveMethod() {
-    return this.req.getCaseSensitiveMethod();
-  }
-
-  public getQuery() {
-    return this.req.getQuery();
-  }
-
-  public setYield(_yield: boolean) {
-    return this.req.setYield(_yield);
-  }
-
-  public headers<T>(): T | null {
-    const obj: any = {};
-
-    this.req.forEach((k, v) => {
-      obj[k] = v;
-    });
-
-    return obj as T;
-  }
-
-  public getParams<T>(): T | null {
-    return exec(this.url, this.regExp, this.keys) as T;
-  }
-
-  public query<T>(): T {
-    return url.parse(`?${this.req.getQuery()}`, true).query as T;
-  }
-
-  public async rawBody<T>(): Promise<T | null> {
-    return new Promise<T | null>(async (resolve, reject) => {
-      this.res.onData((data) => resolve(handleArrayBuffer(data) as T));
-      this.res.onAborted(() => reject(null));
-    });
-  }
-
-  public async body<T>(): Promise<T | null> {
-    const reqType = this.req.getHeader("content-type") as HttpContentType;
+  public async getBody<T>(): Promise<T | null> {
+    const reqType = this.uWebSocketsReq.getHeader(
+      "content-type"
+    ) as HttpContentType;
 
     return new Promise<T | null>(async (resolve, reject) => {
-      this.res.onData((data) => {
-        const response = handleArrayBuffer(data);
+      this.uWebSocketsRes.onData((data) => {
+        let response;
+
+        if (data instanceof ArrayBuffer) {
+          const decoder = new TextDecoder();
+          response = decoder.decode(data);
+        } else {
+          response = data;
+        }
 
         if (reqType === "application/json") {
           resolve(JSON.parse(response) as T);
         } else if (reqType === "application/x-www-form-urlencoded") {
-          resolve(url.parse(`?${response}`, true).query as T);
+          resolve(URL.parse(`?${response}`, true).query as T);
         } else if (reqType.includes("text/plain;")) {
           resolve(response as T);
         } else {
@@ -96,18 +60,18 @@ export class Request {
         }
       });
 
-      this.res.onAborted(() => reject(null));
+      this.uWebSocketsRes.onAborted(() => reject(null));
     });
   }
 
-  public async file(): Promise<MultipartField[] | undefined> {
-    const header = this.req.getHeader("content-type");
+  public async getFile(): Promise<MultipartField[] | undefined> {
+    const header = this.uWebSocketsReq.getHeader("content-type");
 
     return await new Promise<MultipartField[] | undefined>(
       (resolve, reject) => {
         let buffer = Buffer.from("");
 
-        this.res.onData((ab, isLast) => {
+        this.uWebSocketsRes.onData((ab, isLast) => {
           buffer = Buffer.concat([buffer, Buffer.from(ab)]);
 
           if (isLast) {
@@ -115,8 +79,35 @@ export class Request {
           }
         });
 
-        this.res.onAborted(() => reject(null));
+        this.uWebSocketsRes.onAborted(() => reject(null));
       }
     );
+  }
+
+  public getQuery<T>(): T {
+    return URL.parse(`?${this.uWebSocketsReq.getQuery()}`, true).query as T;
+  }
+
+  public getParams<T>(): T {
+    let i = 0;
+    let out = {} as Record<string, string | null>;
+
+    let matches = this.regExp.exec(this.url);
+
+    while (i < this.keys.length) {
+      if (matches) out[this.keys[i]] = matches[++i] || null;
+    }
+
+    return out as T;
+  }
+
+  public getHeaders<T>(): T {
+    const obj = {} as Record<string, string | null>;
+
+    this.uWebSocketsReq.forEach((k, v) => {
+      obj[k] = v;
+    });
+
+    return obj as T;
   }
 }

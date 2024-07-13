@@ -7,6 +7,12 @@ import {
   IRequestHandler,
   IRoute,
 } from "./types";
+import {
+  notFoundFn,
+  onAbortedOrFinishedResponse,
+  pipeStreamOverResponse,
+  toArrayBuffer,
+} from "./utils";
 import { Yume } from "./yume";
 
 export {
@@ -15,7 +21,11 @@ export {
   IErrorHandler,
   IRequestHandler,
   IRoute,
+  notFoundFn,
+  onAbortedOrFinishedResponse,
+  pipeStreamOverResponse,
   Request,
   Response,
+  toArrayBuffer,
   Yume,
 };

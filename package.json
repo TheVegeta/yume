@@ -1,14 +1,13 @@
 {
   "name": "yume-server",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Yume (夢)",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "private": false,
   "scripts": {
-    "build": "tsup",
-    "docs": "docsify serve docs"
+    "build": "tsup"
   },
   "repository": {
     "type": "git",
@@ -19,7 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "regexparam": "^3.0.0",
-    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.42.0"
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.44.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.7",

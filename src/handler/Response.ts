@@ -1,114 +1,65 @@
-import {
-  HttpResponse,
-  RecognizedString,
-  us_socket_context_t,
-} from "uWebSockets.js";
+import fs from "fs";
+import { HttpRequest, HttpResponse, RecognizedString } from "uWebSockets.js";
+import { pipeStreamOverResponse } from "../utils";
 
 export class Response {
-  constructor(private res: HttpResponse) {}
+  private uWebSocketsReq;
+  public uWebSocketsRes;
 
-  pause() {
-    return this.res.pause();
+  constructor(req: HttpRequest, res: HttpResponse) {
+    this.uWebSocketsReq = req;
+    this.uWebSocketsRes = res;
   }
 
-  resume() {
-    return this.res.resume();
+  public send(body: string) {
+    this.uWebSocketsRes.end(body, true);
   }
 
-  writeStatus(status: RecognizedString) {
-    return this.res.writeStatus(status);
+  public json(body: any) {
+    this.uWebSocketsRes
+      .writeHeader("Content-Type", "application/json")
+      .end(JSON.stringify(body), true);
   }
 
-  writeHeader(key: RecognizedString, value: RecognizedString) {
-    return this.res.writeHeader(key, value);
+  public render(body: string) {
+    this.uWebSocketsRes
+      .writeHeader("Content-Type", "text/html; charset=utf-8")
+      .end(body, true);
   }
 
-  write(chunk: RecognizedString) {
-    return this.res.write(chunk);
+  public redirect(url: string) {
+    this.uWebSocketsRes.writeStatus("302").writeHeader("location", url);
   }
 
-  endWithoutBody(
-    reportedContentLength?: number | undefined,
-    closeConnection?: boolean | undefined
-  ) {
-    return this.res.endWithoutBody(reportedContentLength, closeConnection);
-  }
-
-  tryEnd(fullBodyOrChunk: RecognizedString, totalSize: number) {
-    return this.res.tryEnd(fullBodyOrChunk, totalSize);
-  }
-
-  close() {
-    return this.res.close();
-  }
-
-  getWriteOffset() {
-    return this.res.getWriteOffset();
-  }
-
-  onWritable(handler: (offset: number) => boolean) {
-    return this.res.onWritable(handler);
-  }
-
-  onAborted(handler: () => void) {
-    return this.res.onAborted(handler);
-  }
-
-  onData(handler: (chunk: ArrayBuffer, isLast: boolean) => void) {
-    return this.res.onData(handler);
-  }
-
-  getRemoteAddress() {
-    return this.res.getRemoteAddress();
-  }
-
-  getRemoteAddressAsText() {
-    return this.res.getRemoteAddressAsText();
-  }
-
-  getProxiedRemoteAddress() {
-    return this.res.getProxiedRemoteAddress();
-  }
-
-  getProxiedRemoteAddressAsText() {
-    return this.res.getProxiedRemoteAddressAsText();
-  }
-
-  cork(cb: () => void) {
-    return this.res.cork(cb);
-  }
-
-  status(status: number) {
-    this.res.status(status);
+  public status(status: number) {
+    this.uWebSocketsRes.writeStatus(status.toString());
     return this;
   }
 
-  upgrade<UserData>(
-    userData: UserData,
-    secWebSocketKey: RecognizedString,
-    secWebSocketProtocol: RecognizedString,
-    secWebSocketExtensions: RecognizedString,
-    context: us_socket_context_t
-  ) {
-    return this.res.upgrade(
-      userData,
-      secWebSocketKey,
-      secWebSocketProtocol,
-      secWebSocketExtensions,
-      context
-    );
+  public sendFile(fileName: string) {
+    const totalSize = fs.statSync(fileName).size;
+    const readStream = fs.createReadStream(fileName);
+    pipeStreamOverResponse(this.uWebSocketsRes, readStream, totalSize);
   }
 
-  end(
-    body?: RecognizedString | undefined,
-    closeConnection?: boolean | undefined
-  ) {
-    return this.res.end(body, closeConnection);
+  public set(key: RecognizedString, value: RecognizedString) {
+    this.uWebSocketsRes.writeHeader(key, value);
+    return this;
   }
 
-  json<T>(data: T) {
-    return this.res
-      .writeHeader("content-type", "application/json")
-      .end(JSON.stringify(data));
+  public end(body: string) {
+    this.uWebSocketsRes.end(body, true);
+  }
+
+  public startAsync() {
+    this.uWebSocketsRes.onAborted(() => {
+      this.uWebSocketsRes.aborted = true;
+    });
+  }
+
+  public endAsync(cb: VoidFunction) {
+    if (!this.uWebSocketsRes.aborted) {
+      this.uWebSocketsRes.cork(cb);
+    }
   }
 }
