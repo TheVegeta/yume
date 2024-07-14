@@ -2,6 +2,9 @@
 
 > Yume is a lightweight and exceptionally fast web framework specifically designed for building efficient API servers. It achieves this by leveraging the power of [uWebSockets.js](https://github.com/uNetworking/uWebSockets.js), a high-performance WebSocket library for Node.js, and [regexparam](https://github.com/lukeed/regexparam), A tiny utility that converts route patterns into RegExp.
 
+> [!WARNING]  
+> This project is not meant for production or any serious projects
+
 ## Quick start
 
 ### Install with NPM
