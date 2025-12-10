@@ -8,10 +8,11 @@ export const notFoundFn = (_req: Request, res: Response) => {
 };
 
 export const toArrayBuffer = (buffer: ArrayBufferView): ArrayBuffer => {
-  return buffer.buffer.slice(
-    buffer.byteOffset,
-    buffer.byteOffset + buffer.byteLength
+  const bytes = new Uint8Array(buffer.byteLength);
+  bytes.set(
+    new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
   );
+  return bytes.buffer;
 };
 
 export const onAbortedOrFinishedResponse = (
@@ -39,8 +40,10 @@ export const pipeStreamOverResponse = (
   totalSize: number
 ) => {
   readStream
-    .on("data", (chunk: ArrayBufferView) => {
-      const ab = toArrayBuffer(chunk);
+    .on("data", (chunk: Buffer | string) => {
+      const bufferChunk =
+        typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+      const ab = toArrayBuffer(bufferChunk);
       let lastOffset = res.getWriteOffset();
       let [ok, done] = res.tryEnd(ab, totalSize);
 
@@ -48,7 +51,6 @@ export const pipeStreamOverResponse = (
         onAbortedOrFinishedResponse(res, readStream);
       } else if (!ok) {
         readStream.pause();
-
         res.ab = ab;
         res.abOffset = lastOffset;
 
@@ -57,6 +59,7 @@ export const pipeStreamOverResponse = (
             res.ab.slice(offset - res.abOffset),
             totalSize
           );
+
           if (done) {
             onAbortedOrFinishedResponse(res, readStream);
           } else if (ok) {
@@ -67,10 +70,8 @@ export const pipeStreamOverResponse = (
         });
       }
     })
-    .on("error", () => {
-      console.log(
-        "Unhandled read error from Node.js, you need to handle this!"
-      );
+    .on("error", (err) => {
+      console.error("Unhandled read error from Node.js:", err);
     });
 
   res.onAborted(() => {
