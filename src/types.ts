@@ -1,25 +1,30 @@
-import { Request } from "./handler/Request";
-import { Response } from "./handler/Response";
+import { HttpRequest, HttpResponse } from "uWebSockets.js";
+import { Req } from "./handler/Req";
+import { Res } from "./handler/Res";
 
-export interface IRoute {
-  regExp: RegExp;
-  path: string;
-  handler: IRequestHandler[];
-  method: HttpMethod;
-  keys: string[];
-}
-
-export type IRequestHandler = (
-  req: Request,
-  res: Response,
-  next?: VoidFunction
+export type IErrorFn = (
+  err: Error,
+  req: HttpRequest,
+  res: HttpResponse
 ) => void;
+
+export type INotFoundFn = (req: HttpRequest, res: HttpResponse) => void;
+
+export type IHandlerFn = (req: Req, res: Res, next?: VoidFunction) => void;
 
 export type IMiddlewareHandler = (
-  req: Request,
-  res: Response,
+  req: Req,
+  res: Res,
   next: VoidFunction
 ) => void;
+
+export interface IRoute {
+  path: string;
+  regExp: RegExp;
+  method: HttpMethod;
+  keys: string[];
+  handler: IHandlerFn[];
+}
 
 export type HttpMethod =
   | "get"
@@ -32,10 +37,3 @@ export type HttpMethod =
   | "connect"
   | "trace"
   | "all";
-
-export type IErrorHandler = (err: any, req: Request, res: Response) => void;
-
-export type HttpContentType =
-  | "application/x-www-form-urlencoded"
-  | "application/json"
-  | string;

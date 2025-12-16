@@ -17,10 +17,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "lodash": "^4.17.21",
     "regexparam": "^3.0.0",
     "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.56.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.21",
     "@types/node": "^20.11.7",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
